@@ -24,8 +24,7 @@ jobs:
           channel: stable
       - name: Add web platform files
       - name: Set app icon and name
-        run: |
-          sudo apt-get install -y imagemagick
+        run:  sudo apt-get install -y imagemagick
           convert IMG_2256.jpeg -resize 512x512^ -gravity center -extent 512x512 icon.png
           for f in Icon-192 Icon-512 Icon-maskable-192 Icon-maskable-512; do cp icon.png web/icons/$f.png; done
           cp icon.png web/favicon.png
