@@ -28,13 +28,19 @@ jobs:
         run: flutter create . --platforms web --project-name licorice_lip_balm
 
       - name: Set app icon and name
-        continue-on-error: true
         run: |
-          IMG=$(ls IMG_*.jpeg IMG_*.jpg IMG_*.png 2>/dev/null | head -1)
-          echo "Using image: $IMG"
-          convert "$IMG" -resize 512x512^ -gravity center -extent 512x512 icon.png
-          for f in Icon-192 Icon-512 Icon-maskable-192 Icon-maskable-512; do cp icon.png web/icons/$f.png; done
-          cp icon.png web/favicon.png
+          pip install pillow
+          python3 - <<'PY'
+          import glob
+          from PIL import Image, ImageOps
+          src = sorted(glob.glob("IMG_*"))[0]
+          print("Using", src)
+          im = Image.open(src).convert("RGB")
+          im = ImageOps.fit(im, (512, 512))
+          for name, size in [("Icon-192", 192), ("Icon-512", 512), ("Icon-maskable-192", 192), ("Icon-maskable-512", 512)]:
+              im.resize((size, size)).save(f"web/icons/{name}.png")
+          im.resize((64, 64)).save("web/favicon.png")
+          PY
           sed -i 's/licorice_lip_balm/Licorice Balm/g' web/index.html
 
       - run: flutter pub get
