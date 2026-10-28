@@ -19,20 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+
       - name: Add web platform files
+        run: flutter create . --platforms web --project-name licorice_lip_balm
+
       - name: Set app icon and name
-        run:  sudo apt-get install -y imagemagick
-          convert IMG_2256.jpeg -resize 512x512^ -gravity center -extent 512x512 icon.png
+        continue-on-error: true
+        run: |
+          IMG=$(ls IMG_*.jpeg IMG_*.jpg IMG_*.png 2>/dev/null | head -1)
+          echo "Using image: $IMG"
+          convert "$IMG" -resize 512x512^ -gravity center -extent 512x512 icon.png
           for f in Icon-192 Icon-512 Icon-maskable-192 Icon-maskable-512; do cp icon.png web/icons/$f.png; done
           cp icon.png web/favicon.png
           sed -i 's/licorice_lip_balm/Licorice Balm/g' web/index.html
-        run: flutter create . --platforms web --project-name licorice_lip_balm
+
       - run: flutter pub get
+
       - name: Build web
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
